@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import {
@@ -9,6 +9,8 @@ import {
   Paper,
   Alert,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../providers/useAuth.tsx';
 
 type LoginInputs = {
   email: string;
@@ -16,17 +18,27 @@ type LoginInputs = {
 };
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isSubmitSuccessful },
+    formState: { errors, isSubmitting },
   } = useForm<LoginInputs>();
 
-  const onSubmit: SubmitHandler<LoginInputs> = (data: LoginInputs) => {
-    console.log('Login ', data);
-  };
-
   const emailPattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
+  const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+    setErrorMessage(null);
+    try {
+      await login(data.email, data.password);
+      navigate('/');
+    } catch (err: any) {
+      setErrorMessage(err?.response?.data?.message || 'Login failed');
+    }
+  };
 
   return (
     <Box
@@ -41,9 +53,9 @@ const Login: React.FC = () => {
           Login
         </Typography>
 
-        {isSubmitSuccessful && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Login successful!
+        {errorMessage && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errorMessage}
           </Alert>
         )}
 

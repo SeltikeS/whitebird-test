@@ -16,11 +16,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       bgcolor="background.default"
     >
       <Header />
-      <Box display="flex" flex="1">
-        <Box component="main" flex="1" p={2}>
+
+      <Box flex="1" sx={{ display: 'flex', position: 'relative' }}>
+        <Box
+          component="main"
+          flex="1"
+          p={2}
+          sx={{ position: 'absolute', inset: '0', overflow: 'auto' }}
+        >
           {children}
         </Box>
       </Box>
+
       <Footer />
     </Box>
   );
