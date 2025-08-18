@@ -1,3 +1,5 @@
+import type { RoleName } from './role.ts';
+
 export interface UserGeo {
   lat: string;
   lng: string;
@@ -26,4 +28,5 @@ export interface UserDto {
   phone: string;
   website: string;
   company: UserCompany;
+  role: RoleName;
 }

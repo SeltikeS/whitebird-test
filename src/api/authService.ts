@@ -1,6 +1,6 @@
 import type { UserDto } from '../types/user-dto.ts';
-import type { PostDto } from '../types/post-dto.ts';
 import axios from 'axios';
+import { RoleName } from '../types/role.ts';
 
 // const API_URL = 'http://localhost:3000'; // твой бэкенд
 //
@@ -34,12 +34,28 @@ export const authService = {
     return res.data;
   },
 
+  async getUserById(userId: number): Promise<UserDto | null> {
+    const users = await this.getUsers();
+    return users?.find((u) => u.id === userId) ?? null;
+  },
+
   async login(email: string, password: string): Promise<UserDto> {
     const users = await this.getUsers();
-    const user = {
-      ...users[0],
-      email,
-    };
+    let user: UserDto;
+    if (password.startsWith('admin')) {
+      user = {
+        ...users[0],
+        email,
+        role: RoleName.ADMIN,
+      };
+    } else {
+      user = {
+        ...users[1],
+        email,
+        role: RoleName.USER,
+      };
+    }
+
     localStorage.setItem('user', JSON.stringify(user));
     return user;
   },

@@ -7,15 +7,17 @@ import { Permission } from '../types/permission.ts';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const { hasPermission } = usePermission();
+
+  if (!user) return;
 
   const handleHomeClick = () => navigate('/');
   const handleLogoutClick = () => {
     logout();
     navigate('/login');
   };
-  const handleProfileClick = () => navigate('/profile');
+  const handleProfileClick = () => navigate(`/profile/${user.id}`);
   const handleAdminClick = () => navigate('/admin');
 
   return (

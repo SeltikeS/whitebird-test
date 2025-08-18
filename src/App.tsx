@@ -7,10 +7,10 @@ import { PrivateRoute } from './components/routes/PrivateRoute.tsx';
 import { PublicOnlyRoute } from './components/routes/PublicOnlyRoute.tsx';
 import { AuthProvider } from './providers/AuthProvider.tsx';
 import Admin from './pages/Admin.tsx';
-import Profile from './pages/Profile.tsx';
 import { AdminRoute } from './components/routes/AdminRoute.tsx';
 import { PostsProvider } from './providers/PostProvider.tsx';
 import Post from './pages/Post.tsx';
+import { Profile } from './pages/Profile.tsx';
 
 const App: React.FC = () => {
   return (
@@ -36,7 +36,7 @@ const App: React.FC = () => {
                 }
               />
               <Route
-                path="/profile"
+                path="/profile/:userId"
                 element={
                   <PrivateRoute>
                     <Profile />

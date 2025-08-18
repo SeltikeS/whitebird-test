@@ -22,13 +22,18 @@ export const NewPostForm: React.FC = () => {
     formState: { isSubmitting, isValid },
   } = useForm<PostFormData>({
     defaultValues: emptyForm,
-    mode: 'onChange',
+    mode: 'onSubmit',
   });
 
   const onSubmit = async (data: PostFormData) => {
     if (!user) return;
     const post = await postService.createPost(data.title, data.body, user);
-    addPost(post);
+    addPost({
+      ...post,
+      comments: [],
+      dislikedByUserIds: [],
+      likedByUserIds: [],
+    });
     reset(emptyForm);
   };
 

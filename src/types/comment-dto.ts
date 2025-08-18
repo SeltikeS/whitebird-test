@@ -5,3 +5,8 @@ export interface CommentDto {
   email: string;
   body: string;
 }
+
+export interface CommentInfo extends CommentDto {
+  likedByUserIds: number[];
+  dislikedByUserIds: number[];
+}
