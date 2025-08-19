@@ -6,6 +6,8 @@ import { useAuth } from '../providers/useAuth.tsx';
 import {
   Delete,
   ModeEdit,
+  Star,
+  StarBorder,
   ThumbDownAlt,
   ThumbDownOffAlt,
   ThumbUpAlt,
@@ -18,8 +20,15 @@ import { RoleName } from '../types/role.ts';
 
 const Post: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
-  const { posts, likePost, dislikePost, loadingPosts, removePost, updatePost } =
-    usePosts();
+  const {
+    posts,
+    likePost,
+    dislikePost,
+    loadingPosts,
+    removePost,
+    updatePost,
+    toggleFavourite,
+  } = usePosts();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -39,6 +48,8 @@ const Post: React.FC = () => {
     [post, user]
   );
 
+  const isFavourite = useMemo(() => post?.isFavourite ?? false, [post]);
+
   const handleLike = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -53,6 +64,14 @@ const Post: React.FC = () => {
       if (user) dislikePost(id, user.id);
     },
     [id, user, dislikePost]
+  );
+
+  const handleFavourite = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (user) toggleFavourite(id);
+    },
+    [id, user, toggleFavourite]
   );
 
   const handleEdit = useCallback((e: React.MouseEvent) => {
@@ -119,6 +138,9 @@ const Post: React.FC = () => {
               </IconButton>
               <IconButton aria-label="dislike" onClick={handleDislike}>
                 {isDisliked ? <ThumbDownAlt /> : <ThumbDownOffAlt />}
+              </IconButton>
+              <IconButton aria-label="favourite" onClick={handleFavourite}>
+                {isFavourite ? <Star /> : <StarBorder />}
               </IconButton>
             </Box>
 

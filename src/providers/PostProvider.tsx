@@ -4,6 +4,12 @@ import { PostsContext } from '../context/PostsContext.tsx';
 import { postService } from '../api/postService.ts';
 import type { CommentInfo } from '../types/comment-dto.ts';
 
+export const PostDirection = {
+  Up: 'Up',
+  Down: 'Down',
+} as const;
+export type PostDirection = (typeof PostDirection)[keyof typeof PostDirection];
+
 export const PostsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -15,11 +21,13 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const data = await postService.getPosts();
       setPosts(
-        (data ?? []).map((p) => ({
+        (data ?? []).map((p, index) => ({
           ...p,
           likedByUserIds: [],
           dislikedByUserIds: [],
           comments: [],
+          isFavourite: false,
+          priority: data.length - index,
         }))
       );
     } catch (err) {
@@ -33,9 +41,17 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({
     loadPosts();
   }, []);
 
-  const addPost = useCallback((post: PostInfo) => {
-    setPosts((prev) => [post, ...prev]);
-  }, []);
+  const addPost = useCallback(
+    (post: PostInfo) => {
+      const maxPriority = posts.reduce(
+        (max, p) => Math.max(max, p.priority),
+        0
+      );
+      const newPost = { ...post, priority: maxPriority + 1 };
+      setPosts((prev) => [newPost, ...prev]);
+    },
+    [posts]
+  );
 
   const updatePost = useCallback((post: PostInfo) => {
     setPosts((prev) => prev.map((p) => (p.id === post.id ? post : p)));
@@ -43,6 +59,53 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({
 
   const removePost = useCallback((postId: number) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }, []);
+
+  const movePost = useCallback((postId: number, direction: PostDirection) => {
+    setPosts((prev) => {
+      // создаём копию массива
+      const postsCopy = [...prev];
+
+      // находим индекс текущего поста
+      const idx = postsCopy.findIndex((p) => p.id === postId);
+      if (idx === -1) return prev;
+
+      let swapIdx: number | undefined;
+
+      if (direction === PostDirection.Up && idx > 0) swapIdx = idx - 1;
+      if (direction === PostDirection.Down && idx < postsCopy.length - 1)
+        swapIdx = idx + 1;
+
+      if (swapIdx === undefined) return prev;
+
+      // свапаем priority
+      const temp = postsCopy[idx].priority;
+      postsCopy[idx] = {
+        ...postsCopy[idx],
+        priority: postsCopy[swapIdx].priority,
+      };
+      postsCopy[swapIdx] = { ...postsCopy[swapIdx], priority: temp };
+
+      // сортируем по priority, чтобы UI отражал порядок
+      return postsCopy.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    });
+  }, []);
+
+  const movePostToTop = useCallback((postId: number) => {
+    setPosts((prev) => {
+      const postsCopy = [...prev];
+      const idx = postsCopy.findIndex((p) => p.id === postId);
+      if (idx === -1) return prev;
+
+      // Находим максимальный priority среди всех постов
+      const maxPriority = Math.max(...postsCopy.map((p) => p.priority ?? 0));
+
+      // Обновляем priority текущего поста, чтобы он был выше всех
+      postsCopy[idx] = { ...postsCopy[idx], priority: maxPriority + 1 };
+
+      // Сортируем массив по приоритету
+      return postsCopy.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    });
   }, []);
 
   const likePost = useCallback((postId: number, userId: number) => {
@@ -84,6 +147,14 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({
             : post.likedByUserIds,
         };
       })
+    );
+  }, []);
+
+  const toggleFavourite = useCallback((postId: number) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id !== postId ? post : { ...post, isFavourite: !post.isFavourite }
+      )
     );
   }, []);
 
@@ -189,9 +260,12 @@ export const PostsProvider: React.FC<{ children: ReactNode }> = ({
         addPost,
         updatePost,
         removePost,
+        movePost,
+        movePostToTop,
         loadingPosts,
         likePost,
         dislikePost,
+        toggleFavourite,
         setPostComments,
         addComment,
         editComment,

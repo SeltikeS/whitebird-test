@@ -11,4 +11,6 @@ export interface PostInfo extends PostDto {
   likedByUserIds: number[];
   dislikedByUserIds: number[];
   comments: CommentInfo[];
+  isFavourite: boolean;
+  priority: number;
 }

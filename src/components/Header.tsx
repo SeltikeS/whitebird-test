@@ -1,14 +1,14 @@
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../providers/useAuth.tsx';
-import { usePermission } from '../providers/usePermission.tsx';
-import { Permission } from '../types/permission.ts';
+import { RoleName } from '../types/role.ts';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
-  const { hasPermission } = usePermission();
+
+  const hasAdminPermissions = user?.role === RoleName.ADMIN;
 
   if (!user) return;
 
@@ -34,16 +34,7 @@ const Header: React.FC = () => {
           <Box sx={{ flexGrow: 1 }} />{' '}
           {isAuthenticated && (
             <>
-              <Button
-                color="secondary"
-                variant="outlined"
-                onClick={handleProfileClick}
-                sx={{ mr: 1 }}
-              >
-                Profile
-              </Button>
-
-              {hasPermission(Permission.MANAGE_USERS) && (
+              {hasAdminPermissions && (
                 <Button
                   color="secondary"
                   variant="outlined"
@@ -53,6 +44,15 @@ const Header: React.FC = () => {
                   Admin
                 </Button>
               )}
+
+              <Button
+                color="secondary"
+                variant="outlined"
+                onClick={handleProfileClick}
+                sx={{ mr: 1 }}
+              >
+                Profile
+              </Button>
 
               <Button
                 color="secondary"

@@ -10,13 +10,21 @@ import React, { useCallback, useMemo } from 'react';
 import type { PostInfo } from '../types/./post-dto.ts';
 import { useNavigate } from 'react-router-dom';
 import {
+  ArrowDownward,
+  ArrowUpward,
+  HorizontalRule,
+  Star,
+  StarBorder,
   ThumbDownAlt,
   ThumbDownOffAlt,
   ThumbUpAlt,
   ThumbUpOffAlt,
+  VerticalAlignTop,
 } from '@mui/icons-material';
 import { usePosts } from '../providers/usePosts.tsx';
 import { useAuth } from '../providers/useAuth.tsx';
+import { RoleName } from '../types/role.ts';
+import { PostDirection } from '../providers/PostProvider.tsx';
 
 interface PostItemProps {
   post: PostInfo;
@@ -25,8 +33,17 @@ interface PostItemProps {
 export const PostItem: React.FC<PostItemProps> = React.memo(
   ({ post }) => {
     const navigate = useNavigate();
-    const { posts, likePost, dislikePost } = usePosts();
+    const {
+      posts,
+      likePost,
+      dislikePost,
+      toggleFavourite,
+      movePost,
+      movePostToTop,
+    } = usePosts();
     const { user } = useAuth();
+
+    const hasAdminPermissions = user?.role === RoleName.ADMIN;
 
     const postFromStore = useMemo(
       () => posts.find((p) => p.id === post.id),
@@ -43,6 +60,11 @@ export const PostItem: React.FC<PostItemProps> = React.memo(
       [postFromStore, user]
     );
 
+    const isFavourite = useMemo(
+      () => postFromStore?.isFavourite ?? false,
+      [postFromStore]
+    );
+
     const handleLike = useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -57,6 +79,14 @@ export const PostItem: React.FC<PostItemProps> = React.memo(
         if (user) dislikePost(post.id, user.id);
       },
       [post.id, user, dislikePost]
+    );
+
+    const handleFavourite = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (user) toggleFavourite(post.id);
+      },
+      [post.id, user, toggleFavourite]
     );
 
     return (
@@ -76,6 +106,48 @@ export const PostItem: React.FC<PostItemProps> = React.memo(
           <IconButton aria-label="dislike" onClick={handleDislike}>
             {isDisliked ? <ThumbDownAlt /> : <ThumbDownOffAlt />}
           </IconButton>
+          <HorizontalRule
+            sx={{ transform: 'rotate(90deg)' }}
+            color="disabled"
+            fontSize="large"
+          />
+          <IconButton aria-label="favourite" onClick={handleFavourite}>
+            {isFavourite ? <Star /> : <StarBorder />}
+          </IconButton>
+
+          {hasAdminPermissions && (
+            <>
+              <HorizontalRule
+                sx={{ transform: 'rotate(90deg)' }}
+                color="disabled"
+                fontSize="large"
+              />
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  movePostToTop(post.id);
+                }}
+              >
+                <VerticalAlignTop />
+              </IconButton>
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  movePost(post.id, PostDirection.Up);
+                }}
+              >
+                <ArrowUpward />
+              </IconButton>
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  movePost(post.id, PostDirection.Down);
+                }}
+              >
+                <ArrowDownward />
+              </IconButton>
+            </>
+          )}
         </CardActions>
       </Card>
     );
@@ -99,6 +171,13 @@ export const PostItem: React.FC<PostItemProps> = React.memo(
           (id, i) => id === nextPost.dislikedByUserIds[i]
         ));
 
-    return prevPost.id === nextPost.id && likedEqual && dislikedEqual;
+    const favouriteEqual = prevPost.isFavourite === nextPost.isFavourite;
+
+    return (
+      prevPost.id === nextPost.id &&
+      favouriteEqual &&
+      likedEqual &&
+      dislikedEqual
+    );
   }
 );

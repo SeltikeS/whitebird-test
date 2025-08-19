@@ -1,17 +1,16 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../providers/useAuth.tsx';
-import { usePermission } from '../../providers/usePermission.tsx';
-import { Permission } from '../../types/permission.ts';
 import { Box, CircularProgress } from '@mui/material';
+import { RoleName } from '../../types/role.ts';
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  const { hasPermission } = usePermission();
+  const { isAuthenticated, loading, user } = useAuth();
+  const hasAdminPermissions = user?.role === RoleName.ADMIN;
 
   if (loading) {
     return (
@@ -23,7 +22,7 @@ export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated || !hasPermission(Permission.MANAGE_USERS)) {
+  if (!isAuthenticated || !hasAdminPermissions) {
     return <Navigate to="/" replace />;
   }
 

@@ -33,6 +33,8 @@ export const NewPostForm: React.FC = () => {
       comments: [],
       dislikedByUserIds: [],
       likedByUserIds: [],
+      isFavourite: false,
+      priority: 0,
     });
     reset(emptyForm);
   };
