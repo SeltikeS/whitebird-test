@@ -17,12 +17,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     >
       <Header />
 
-      <Box flex="1" sx={{ display: 'flex', position: 'relative' }}>
+      <Box
+        flex="1"
+        sx={{
+          display: 'flex',
+          position: 'relative',
+        }}
+      >
         <Box
           component="main"
           flex="1"
           p={2}
-          sx={{ position: 'absolute', inset: '0', overflow: 'auto' }}
+          sx={{
+            position: 'absolute',
+            inset: '0',
+            overflow: 'auto',
+            scrollbarGutter: 'stable',
+          }}
         >
           {children}
         </Box>
