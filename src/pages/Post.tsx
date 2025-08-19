@@ -14,6 +14,7 @@ import {
 import { CommentsBlock } from '../components/CommentsBlock.tsx';
 import { EditablePostForm } from '../components/EditablePostForm.tsx';
 import type { PostInfo } from '../types/post-dto.ts';
+import { RoleName } from '../types/role.ts';
 
 const Post: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -27,6 +28,7 @@ const Post: React.FC = () => {
 
   const post = useMemo(() => posts.find((p) => p.id === id), [posts, id]);
   const isMyPost = user?.id === post?.userId;
+  const hasAdminPermissions = user?.role === RoleName.ADMIN;
 
   const isLiked = useMemo(
     () => (user ? post?.likedByUserIds.includes(user.id) : false),
@@ -120,11 +122,14 @@ const Post: React.FC = () => {
               </IconButton>
             </Box>
 
-            {isMyPost && (
+            {(isMyPost || hasAdminPermissions) && (
               <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                <IconButton aria-label="edit" onClick={handleEdit}>
-                  <ModeEdit />
-                </IconButton>
+                {isMyPost && (
+                  <IconButton aria-label="edit" onClick={handleEdit}>
+                    <ModeEdit />
+                  </IconButton>
+                )}
+
                 <IconButton aria-label="delete" onClick={handleDelete}>
                   <Delete />
                 </IconButton>

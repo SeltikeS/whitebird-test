@@ -39,6 +39,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const updateUser = async (data: Partial<UserDto>) => {
+    if (!user) return null;
+    const me = await authService.me();
+    const updated: UserDto = { ...me, ...data };
+    setUser(updated as UserDto);
+    return updated;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -47,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

@@ -7,6 +7,7 @@ export interface AuthContextProps {
   login: (email: string, password: string) => Promise<void>;
   isAuthenticated: boolean;
   logout: () => void;
+  updateUser: (user: Partial<UserDto>) => Promise<UserDto | null>;
 }
 
 export const AuthContext = createContext<AuthContextProps | null>(null);
